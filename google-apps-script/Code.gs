@@ -165,6 +165,18 @@ function doPost(e) {
 }
 
 // -----------------------------------------------------------
+// Converte data no formato pt-BR "DD/MM/AAAA, HH:MM:SS" (ou
+// objeto Date do Sheets) para timestamp numérico para ordenação.
+// -----------------------------------------------------------
+function parseBRDate(val) {
+  if (!val) return 0
+  if (val instanceof Date) return val.getTime()
+  const m = String(val).match(/(\d{2})\/(\d{2})\/(\d{4}),?\s*(\d{2}):(\d{2}):(\d{2})/)
+  if (!m) return 0
+  return new Date(+m[3], +m[2] - 1, +m[1], +m[4], +m[5], +m[6]).getTime()
+}
+
+// -----------------------------------------------------------
 // GET — lista registros de uma unidade com paginação
 // -----------------------------------------------------------
 function doGet(e) {
@@ -210,8 +222,8 @@ function doGet(e) {
       })
     })
 
-    // Mais recentes primeiro
-    allRows.reverse()
+    // Mais recentes primeiro — ordena pela data de registro descrescente
+    allRows.sort((a, b) => parseBRDate(b.registradoEm) - parseBRDate(a.registradoEm))
 
     const total = allRows.length
     const start = (pagina - 1) * PAGE_SIZE
