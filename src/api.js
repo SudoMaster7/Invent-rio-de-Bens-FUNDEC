@@ -63,15 +63,17 @@ async function _postOnline(data) {
 }
 
 /**
- * Envia registro — salva na fila offline se sem conexão.
- * @returns {{ success, offline? }}
+ * Salva registro instantaneamente no queue local e dispara
+ * sync em background se houver conexão — não bloqueia a navegação.
+ * @returns {{ success: true }}
  */
-export async function postRegistro(data) {
-  if (!navigator.onLine) {
-    addToQueue(data)
-    return { success: true, offline: true }
+export function postRegistro(data) {
+  addToQueue(data)
+  // Fire-and-forget: tenta enviar ao servidor sem bloquear a UI
+  if (navigator.onLine) {
+    syncQueue().catch(() => {})
   }
-  return _postOnline(data)
+  return { success: true }
 }
 
 /** Exclui um registro pelo número de linha na aba. */

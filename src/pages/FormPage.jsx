@@ -192,7 +192,7 @@ export default function FormPage() {
     reader.readAsDataURL(file)
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault()
     if (!form.estadoBem) {
       setToast({ type: 'error', message: 'Selecione o estado do bem antes de salvar.' })
@@ -200,53 +200,31 @@ export default function FormPage() {
     }
 
     const total = quantidade
-    setToast({ type: 'loading', message: isOnline
-      ? `Salvando ${total > 1 ? total + ' registros' : 'na planilha'}...`
-      : 'Sem internet — salvando localmente...' })
 
-    try {
-      if (total === 1) {
-        // comportamento original
-        const payload = {
-          ...form,
-          plaquetaFisica: itens[0].plaquetaFisica || form.plaquetaFisica,
-          numeroSerie:    itens[0].numeroSerie    || form.numeroSerie,
-          foto: foto || ''
-        }
-        const result = await postRegistro(payload)
-        if (result.offline) {
-          setToast({ type: 'success', message: '⚡ Salvo na fila! Será enviado ao reconectar.' })
-        } else {
-          setToast({ type: 'success', message: 'Registro salvo com sucesso!' })
-        }
-      } else {
-        // múltiplos itens: envia um de cada vez
-        let offlineCount = 0
-        for (let i = 0; i < itens.length; i++) {
-          setToast({ type: 'loading', message: `Salvando item ${i + 1} de ${total}...` })
-          const payload = {
-            ...form,
-            plaquetaFisica: itens[i].plaquetaFisica,
-            numeroSerie:    itens[i].numeroSerie,
-            foto: foto || ''
-          }
-          const result = await postRegistro(payload)
-          if (result.offline) offlineCount++
-        }
-        if (offlineCount > 0) {
-          setToast({ type: 'success', message: `⚡ ${offlineCount} de ${total} itens salvos na fila offline.` })
-        } else {
-          setToast({ type: 'success', message: `${total} registros salvos com sucesso!` })
-        }
-      }
-
-      setForm((prev) => ({ ...INITIAL, unidade: prev.unidade }))
-      setFoto(null)
-      setQuantidade(1)
-      setItens([{ plaquetaFisica: '', numeroSerie: '' }])
-    } catch (err) {
-      setToast({ type: 'error', message: err.message || 'Falha ao salvar. Verifique a conexão.' })
+    // Salva todos os itens no queue local instantaneamente (síncrono)
+    for (let i = 0; i < itens.length; i++) {
+      postRegistro({
+        ...form,
+        plaquetaFisica: itens[i].plaquetaFisica,
+        numeroSerie:    itens[i].numeroSerie,
+        foto:           foto || '',
+      })
     }
+
+    // Feedback imediato — dados já estão seguros no localStorage
+    const msg = isOnline
+      ? total > 1
+        ? `${total} registros enviados para a planilha!`
+        : 'Registro enviado para a planilha!'
+      : total > 1
+        ? `${total} registros salvos — serão enviados ao reconectar.`
+        : 'Salvo localmente — será enviado ao reconectar.'
+
+    setToast({ type: 'success', message: msg })
+    setForm((prev) => ({ ...INITIAL, unidade: prev.unidade }))
+    setFoto(null)
+    setQuantidade(1)
+    setItens([{ plaquetaFisica: '', numeroSerie: '' }])
   }
 
   return (
