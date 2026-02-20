@@ -88,8 +88,8 @@ function salvarFotoNoDrive(base64Data, plaqueta) {
     const arquivo = pasta.createFile(blob)
     arquivo.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW)
 
-    // URL de thumbnail — funciona direto como <img src> sem bloqueios
-    return 'https://drive.google.com/thumbnail?id=' + arquivo.getId() + '&sz=w800'
+    // URL via CDN do Google — funciona como <img src> sem autenticação
+    return 'https://lh3.googleusercontent.com/d/' + arquivo.getId()
   } catch (err) {
     Logger.log('Erro ao salvar foto: ' + err.message)
     return ''
