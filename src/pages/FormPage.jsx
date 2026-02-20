@@ -187,9 +187,20 @@ export default function FormPage() {
   const handleFoto = (e) => {
     const file = e.target.files?.[0]
     if (!file) return
-    const reader = new FileReader()
-    reader.onload = (ev) => setFoto(ev.target.result)
-    reader.readAsDataURL(file)
+    const img = new Image()
+    const objectUrl = URL.createObjectURL(file)
+    img.onload = () => {
+      // Redimensiona para no máximo 1200px e qualidade 75% para caber no localStorage
+      const MAX = 1200
+      const scale = Math.min(1, MAX / Math.max(img.width, img.height))
+      const canvas = document.createElement('canvas')
+      canvas.width  = Math.round(img.width  * scale)
+      canvas.height = Math.round(img.height * scale)
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height)
+      setFoto(canvas.toDataURL('image/jpeg', 0.75))
+      URL.revokeObjectURL(objectUrl)
+    }
+    img.src = objectUrl
   }
 
   const handleSubmit = (e) => {
