@@ -444,7 +444,7 @@ export default function HistoricoPage() {
             <div className="flex flex-col gap-3">
               {registrosFiltrados.map((r, i) => (
                 <RegistroCard
-                  key={r._rowNum || i}
+                  key={r.unidade && r._rowNum ? `${r.unidade}-${r._rowNum}` : i}
                   r={r}
                   onDeleteRequest={() => handleDeleteRequest(todos.indexOf(r), r)}
                   confirming={deletingRow?.idx === todos.indexOf(r)}
