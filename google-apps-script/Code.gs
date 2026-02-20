@@ -83,9 +83,7 @@ function salvarFotoNoDrive(base64Data, plaqueta) {
     const blob     = Utilities.newBlob(dados, mimeType,
                        'foto-' + (plaqueta || Date.now()) + '.jpg')
 
-    const nomePasta = 'FUNDEC — Fotos Inventário'
-    const iter      = DriveApp.getFoldersByName(nomePasta)
-    const pasta     = iter.hasNext() ? iter.next() : DriveApp.createFolder(nomePasta)
+    const pasta = DriveApp.getFolderById('1MwA3-q2gq4z6LsMMCv9vh5vwl4FonL8l')
 
     const arquivo = pasta.createFile(blob)
     arquivo.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW)
