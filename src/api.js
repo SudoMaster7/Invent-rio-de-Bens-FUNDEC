@@ -30,10 +30,15 @@ export function addToQueue(data) {
   _setQueue(q)
 }
 
+let _syncInProgress = false
+let _syncTimer = null
+
 /** Tenta enviar todos os itens pendentes da fila. */
 export async function syncQueue() {
+  if (_syncInProgress) return { synced: 0, failed: 0 }
   const q = getQueue()
   if (!q.length || !navigator.onLine) return { synced: 0, failed: 0 }
+  _syncInProgress = true
   let synced = 0
   const remaining = []
   for (const item of q) {
@@ -46,6 +51,7 @@ export async function syncQueue() {
     }
   }
   _setQueue(remaining)
+  _syncInProgress = false
   return { synced, failed: remaining.length }
 }
 
@@ -69,9 +75,10 @@ async function _postOnline(data) {
  */
 export function postRegistro(data) {
   addToQueue(data)
-  // Fire-and-forget: tenta enviar ao servidor sem bloquear a UI
+  // Debounce: aguarda 150ms para acumular todos os itens do lote antes de sincronizar
   if (navigator.onLine) {
-    syncQueue().catch(() => {})
+    clearTimeout(_syncTimer)
+    _syncTimer = setTimeout(() => { syncQueue().catch(() => {}) }, 150)
   }
   return { success: true }
 }
