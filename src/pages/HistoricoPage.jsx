@@ -101,7 +101,7 @@ function RegistroCard({ r, onDeleteRequest, confirming, onDeleteConfirm, onDelet
           </div>
         )}
         {r.foto && (
-          <img src={r.foto} alt="Foto do bem" className="w-full rounded-xl object-cover mt-1" style={{ maxHeight: 180, border: '1px solid var(--fundec-border)' }} />
+          <img src={r.foto} alt="Foto do bem" referrerPolicy="no-referrer" crossOrigin="anonymous" className="w-full rounded-xl object-cover mt-1" style={{ maxHeight: 180, border: '1px solid var(--fundec-border)' }} />
         )}
         {r.registradoEm && (
           <p className="text-xs mt-0.5" style={{ color: 'var(--fundec-muted)' }}>📅 {r.registradoEm}</p>
