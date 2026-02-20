@@ -14,7 +14,7 @@
 
 // ⚠️  Cole aqui o ID da sua planilha (parte da URL entre /d/ e /edit)
 // Exemplo: https://docs.google.com/spreadsheets/d/ESTE_ID_AQUI/edit
-const SPREADSHEET_ID = ''
+const SPREADSHEET_ID = '1NJFoTOVoP4Jtjz84VCbh0e6EtvSWzuUalP2BhSAd3fk'
 
 /** Retorna a planilha correta (bound ou por ID) */
 function getSpreadsheet() {
@@ -72,6 +72,33 @@ function getOrCreateSheet(spreadsheet, nomeUnidade) {
 }
 
 // -----------------------------------------------------------
+// Salva imagem base64 no Google Drive e retorna URL pública
+// -----------------------------------------------------------
+function salvarFotoNoDrive(base64Data, plaqueta) {
+  try {
+    const match = base64Data.match(/^data:(image\/[\w+]+);base64,(.+)$/)
+    if (!match) return ''
+    const mimeType = match[1]
+    const dados    = Utilities.base64Decode(match[2])
+    const blob     = Utilities.newBlob(dados, mimeType,
+                       'foto-' + (plaqueta || Date.now()) + '.jpg')
+
+    const nomePasta = 'FUNDEC — Fotos Inventário'
+    const iter      = DriveApp.getFoldersByName(nomePasta)
+    const pasta     = iter.hasNext() ? iter.next() : DriveApp.createFolder(nomePasta)
+
+    const arquivo = pasta.createFile(blob)
+    arquivo.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW)
+
+    // URL direta compatível com <img src>
+    return 'https://drive.google.com/uc?export=view&id=' + arquivo.getId()
+  } catch (err) {
+    Logger.log('Erro ao salvar foto: ' + err.message)
+    return ''
+  }
+}
+
+// -----------------------------------------------------------
 // POST — roteador de ações: insert | delete
 // -----------------------------------------------------------
 function doPost(e) {
@@ -106,8 +133,15 @@ function doPost(e) {
       .map(c => c.nome + (c.funcao ? ' - ' + c.funcao : '') + (c.matricula ? ' (' + c.matricula + ')' : ''))
       .join('; ')
 
-    // Foto: se base64, salva direto na célula; se URL, salva URL
-    const fotoVal = (body.foto || '').startsWith('data:') ? '(foto local)' : (body.foto || '')
+    // Foto: se base64, envia para o Drive e guarda URL pública; se URL, guarda direto
+    let fotoVal = ''
+    if (body.foto) {
+      if (body.foto.startsWith('data:')) {
+        fotoVal = salvarFotoNoDrive(body.foto, body.plaquetaFisica)
+      } else {
+        fotoVal = body.foto
+      }
+    }
 
     sheet.appendRow([
       body.plaquetaFisica  || '',
