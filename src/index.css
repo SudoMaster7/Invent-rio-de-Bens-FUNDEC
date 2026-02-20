@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+/* ── FUNDEC Brand Tokens ─────────────────────────────────────── */
+:root {
+  --fundec-navy:        #0d2448;
+  --fundec-navy-dark:   #081828;
+  --fundec-navy-light:  #1a3a6b;
+  --fundec-green:       #1e6b38;
+  --fundec-green-light: #2d9451;
+  --fundec-gold:        #e8a010;
+  --fundec-gold-light:  #f5bc3a;
+  --fundec-bg:          #f0f3f8;
+  --fundec-surface:     #ffffff;
+  --fundec-border:      #dde3ec;
+  --fundec-text:        #1a2340;
+  --fundec-muted:       #6b7a99;
+}
+
+@layer base {
+  * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+  body {
+    margin: 0;
+    background-color: var(--fundec-bg);
+    color: var(--fundec-text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  #root { min-height: 100dvh; display: flex; flex-direction: column; }
+}
